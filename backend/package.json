@@ -1,0 +1,20 @@
+{
+  "name": "backend-api",
+  "version": "1.0.0",
+  "description": "Simple three-tier app backend API",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "test": "jest --forceExit"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.4.1",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4"
+  }
+}

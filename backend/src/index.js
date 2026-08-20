@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
 
 const app = express();
@@ -30,7 +31,25 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check
+// General API rate limiter: max 100 requests per minute per IP
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Stricter limiter for DB-hitting endpoints
+const dbLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api', apiLimiter);
+
+// Health check (no rate limit – needed by load balancers)
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
@@ -41,7 +60,7 @@ app.get('/api/hello', (req, res) => {
 });
 
 // DB info endpoint
-app.get('/api/db-status', async (req, res) => {
+app.get('/api/db-status', dbLimiter, async (req, res) => {
   if (!pool) {
     return res.json({ connected: false, reason: 'DB_HOST not configured' });
   }

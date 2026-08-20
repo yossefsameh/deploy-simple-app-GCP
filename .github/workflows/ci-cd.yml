@@ -16,6 +16,8 @@ jobs:
   test-backend:
     name: Build & Test Backend
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: backend

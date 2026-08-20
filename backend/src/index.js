@@ -15,7 +15,7 @@ if (process.env.DB_HOST) {
     database: process.env.DB_NAME || 'appdb',
     user: process.env.DB_USER || 'appuser',
     password: process.env.DB_PASSWORD,
-    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : false,
   });
 }
 

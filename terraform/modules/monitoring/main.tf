@@ -8,27 +8,30 @@ resource "google_monitoring_notification_channel" "email" {
   }
 }
 
-# Alert: backend request error rate > 5 % over 5 minutes
+# Alert: backend request error rate > 5 % over 5 minutes (MQL ratio)
 resource "google_monitoring_alert_policy" "backend_error_rate" {
   project      = var.project_id
-  display_name = "${var.app_name}-${var.environment}: Backend 5xx Error Rate"
+  display_name = "${var.app_name}-${var.environment}: Backend 5xx Error Rate > 5%"
   combiner     = "OR"
   enabled      = true
 
   conditions {
-    display_name = "Cloud Run backend 5xx errors > 5 %"
+    display_name = "Cloud Run backend 5xx error rate > 5% of total requests"
 
-    condition_threshold {
-      filter          = "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"${var.backend_service_name}\" AND metric.type=\"run.googleapis.com/request_count\" AND metric.labels.response_code_class=\"5xx\""
-      duration        = "300s"
-      comparison      = "COMPARISON_GT"
-      threshold_value = 0.05
-      aggregations {
-        alignment_period     = "60s"
-        per_series_aligner   = "ALIGN_RATE"
-        cross_series_reducer = "REDUCE_MEAN"
-        group_by_fields      = ["resource.label.service_name"]
-      }
+    condition_monitoring_query_language {
+      query    = <<-EOT
+        fetch cloud_run_revision
+        | metric 'run.googleapis.com/request_count'
+        | filter resource.service_name == '${var.backend_service_name}'
+        | align rate(1m)
+        | group_by [resource.service_name], [
+            total: sum(val()),
+            errors: sum(if(metric.response_code_class == '5xx', val(), 0))
+          ]
+        | value [error_ratio: div(errors, if(total > 0, total, 1))]
+        | condition error_ratio > 0.05
+      EOT
+      duration = "300s"
     }
   }
 
@@ -41,7 +44,7 @@ resource "google_monitoring_alert_policy" "backend_error_rate" {
   }
 
   documentation {
-    content   = "Backend 5xx error rate has exceeded 5% over the last 5 minutes. Investigate Cloud Run logs."
+    content   = "Backend 5xx error rate has exceeded 5% of total requests over the last 5 minutes. Investigate Cloud Run logs."
     mime_type = "text/markdown"
   }
 }

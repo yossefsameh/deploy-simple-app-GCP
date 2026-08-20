@@ -4,7 +4,7 @@ resource "google_sql_database_instance" "postgres" {
   region           = var.region
   database_version = "POSTGRES_15"
 
-  deletion_protection = false
+  deletion_protection = true
 
   settings {
     tier              = var.db_tier

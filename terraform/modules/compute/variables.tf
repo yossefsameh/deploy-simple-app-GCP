@@ -7,11 +7,11 @@ variable "frontend_image"    { type = string; description = "Full Docker image U
 variable "vpc_connector_id"  { type = string }
 variable "service_account_email" { type = string }
 
-variable "db_host"     { type = string; default = "" }
-variable "db_name"     { type = string; default = "appdb" }
-variable "db_user"     { type = string; default = "appuser" }
-variable "db_password" {
-  type      = string
-  sensitive = true
-  default   = ""
+variable "db_host"            { type = string; default = "" }
+variable "db_name"            { type = string; default = "appdb" }
+variable "db_user"            { type = string; default = "appuser" }
+variable "db_password_secret" {
+  description = "Secret Manager secret ID that holds the DB password"
+  type        = string
+  default     = ""
 }

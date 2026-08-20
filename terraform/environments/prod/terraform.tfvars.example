@@ -1,0 +1,13 @@
+# Copy this file to terraform.tfvars and fill in the values.
+# Never commit terraform.tfvars to version control.
+
+project_id     = "my-gcp-project"
+region         = "us-central1"
+app_name       = "three-tier-app"
+environment    = "prod"
+vpc_cidr       = "10.10.0.0/24"
+db_tier        = "db-f1-micro"
+backend_image  = "gcr.io/my-gcp-project/backend:latest"
+frontend_image = "gcr.io/my-gcp-project/frontend:latest"
+alert_email    = "ops-team@example.com"
+# db_password is supplied via the TF_VAR_db_password environment variable
